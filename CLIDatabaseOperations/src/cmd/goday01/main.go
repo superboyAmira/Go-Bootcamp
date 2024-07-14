@@ -24,7 +24,7 @@ func main() {
 		backupgenerator.MakeSnapshot(fileInfo.Snapshot, log)
 	}
 	if fileInfo.Path_backup_new != "" && fileInfo.Path_backup_old != "" {
-
+		comparator.HashByHashComparator(fileInfo, log)
 	}
 }
 

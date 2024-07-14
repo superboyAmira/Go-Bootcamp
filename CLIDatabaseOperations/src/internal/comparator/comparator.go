@@ -1,27 +1,31 @@
 package comparator
 
 import (
+	"bufio"
 	"fmt"
 	"goday01/internal/dbreader"
 	"goday01/internal/input"
 	"log/slog"
+	"os"
 )
 
 const (
-	cakeADDED string = "ADDED cake \"%s\"\n"
-	cakeREMOVED string = "REMOVED cake \"%s\"\n"
-
-	timeCHANGED string = "CHANGED cooking time for cake \"%s\" - \"%s\" instead of \"%s\"\n"
-
-	ingredientADDED string = "ADDED ingredient \"%s\" for cake \"%s\"\n"
+	cakeADDED         string = "ADDED cake \"%s\"\n"
+	cakeREMOVED       string = "REMOVED cake \"%s\"\n"
+	timeCHANGED       string = "CHANGED cooking time for cake \"%s\" - \"%s\" instead of \"%s\"\n"
+	ingredientADDED   string = "ADDED ingredient \"%s\" for cake \"%s\"\n"
 	ingredientREMOVED string = "REMOVED ingredient \"%s\" for cake \"%s\"\n"
-
-	countUnitCHANGED string = "CHANGED unit count for ingredient \"%s\" for cake \"%s\" - \"%s\" instead of \"%s\"\n"
-	unitCHANGED string = "CHANGED unit for ingredient \"%s\" for cake  \"%s\" - \"%s\" instead of \"%s\"\n"
-	unitREMOVED string = "REMOVED unit \"%s\" for ingredient \"%s\" for cake \"%s\"\n"
+	countUnitCHANGED  string = "CHANGED unit count for ingredient \"%s\" for cake \"%s\" - \"%s\" instead of \"%s\"\n"
+	unitCHANGED       string = "CHANGED unit for ingredient \"%s\" for cake  \"%s\" - \"%s\" instead of \"%s\"\n"
+	unitREMOVED       string = "REMOVED unit \"%s\" for ingredient \"%s\" for cake \"%s\"\n"
 )
 
-func Compare(cfg input.CLIcfg, log * slog.Logger) {
+const (
+	fileADDED   string = "ADDED %s\n"
+	fileREMOVED string = "REMOVED %s\n"
+)
+
+func Compare(cfg input.CLIcfg, log *slog.Logger) {
 	reader_old, err := dbreader.GetReader(cfg.FileType_old)
 	if err != nil {
 		log.Debug(err.Error())
@@ -38,17 +42,17 @@ func Compare(cfg input.CLIcfg, log * slog.Logger) {
 		return
 	}
 	err, data_new := reader_new.Load(cfg.Path_new, log)
-	if  err != nil {
+	if err != nil {
 		log.Debug(err.Error())
 		return
 	}
-	for itr, cake_new  := range data_new.Cake {
+	for itr, cake_new := range data_new.Cake {
 		var AddedCake bool = true
-		for _, cake_old  := range data_old.Cake {
+		for _, cake_old := range data_old.Cake {
 			// removed cake
-			if (itr == 0) {
+			if itr == 0 {
 				var RemovedCake bool = true
-				for _, cake_new_tmp  := range data_new.Cake {
+				for _, cake_new_tmp := range data_new.Cake {
 					if cake_new_tmp.Name == cake_old.Name {
 						RemovedCake = false
 					}
@@ -89,7 +93,7 @@ func Compare(cfg input.CLIcfg, log * slog.Logger) {
 							}
 						}
 					}
-					// added ingredent 
+					// added ingredent
 					if AddedIngr {
 						fmt.Printf(ingredientADDED, ingredient_new.Name, cake_new.Name)
 					}
@@ -107,6 +111,55 @@ func Compare(cfg input.CLIcfg, log * slog.Logger) {
  * Comparison between two files large dimension, based on method Hash-sum comparison
  * wiki link: https://en.wikipedia.org/wiki/Comparison_of_cryptographic_hash_functions
  */
-func HashByHashComparator(cfg input.CLIcfg, log *slog.Logger) bool {
+func HashByHashComparator(cfg input.CLIcfg, log *slog.Logger) {
+	fileReaderNew, err := os.Open(cfg.Path_backup_new)
+	if err != nil {
+		log.Debug(err.Error())
+		return
+	}
+	defer fileReaderNew.Close()
+	fileReaderOld, err := os.Open(cfg.Path_backup_old)
+	if err != nil {
+		log.Debug(err.Error())
+		return
+	}
+	defer fileReaderOld.Close()
 
+	scannerNew := bufio.NewScanner(fileReaderNew)
+	scannerOld := bufio.NewScanner(fileReaderOld)
+
+	// https://www.reddit.com/r/golang/comments/gnge5m/stop_using_mapstringstruct_for_existence_checks/?rdt=51169
+	// так как карта действительно может быть большой, будем использовать такую карту
+	setNewFile := make(map[string]struct{})
+	setUnionBothFiles := make(map[string]struct{})
+
+	for scannerNew.Scan() {
+		line := scannerNew.Text()
+		if line != "" {
+			setNewFile[line] = struct{}{}
+		}
+	}
+	if err := scannerNew.Err(); err != nil {
+		log.Debug("Error reading newFile")
+		return
+	}
+	for scannerOld.Scan() {
+		lineToCheck := scannerOld.Text()
+		if lineToCheck != "" {
+			if _, find := setNewFile[lineToCheck]; find {
+				setUnionBothFiles[lineToCheck] = struct{}{}
+			} else {
+				fmt.Printf(fileREMOVED, lineToCheck)
+			}
+		}
+	}
+	if err := scannerOld.Err(); err != nil {
+		log.Debug("Error reading oldFile")
+		return
+	}
+	for line := range setNewFile {
+		if _, find := setUnionBothFiles[line]; !find {
+			fmt.Printf(fileADDED, line)
+		}
+	}
 }

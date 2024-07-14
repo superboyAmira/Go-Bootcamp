@@ -6,6 +6,10 @@ import (
 	"goday01/internal/model/recipes"
 )
 
+/*
+ * Интерфейс соответствует принципам SOA. Для чего и вынесен отдельный метод Load
+ */
+
 type DBReader interface {
 	Load(path string, log *slog.Logger) (error, *recipes.Recipes)
 	MustProcess(log *slog.Logger)

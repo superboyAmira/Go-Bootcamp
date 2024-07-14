@@ -6,17 +6,15 @@ import (
 )
 
 type CLIcfg struct {
-	Path_f     string
-	FileType_f string
-
-	Path_old     string
-	Path_new     string
-	FileType_old string
-	FileType_new string
-
+	Path_f          string
+	FileType_f      string
+	Path_old        string
+	Path_new        string
+	FileType_old    string
+	FileType_new    string
 	Path_backup_old string
 	Path_backup_new string
-	Snapshot string
+	Snapshot        string
 }
 
 /*
