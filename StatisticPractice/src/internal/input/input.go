@@ -1,60 +1,47 @@
 package input
 
 import (
-	"bufio"
 	"flag"
-	"fmt"
-	"os"
-	"strconv"
+	"path/filepath"
 )
 
-// нужно начинать поля с большой буквы для доступа к полям вне модуля!
-type UsedMetrics struct {
-	NeedMean   bool
-	NeedMedian bool
-	NeedMode   bool
-	NeedSD     bool
+type CLIcfg struct {
+	Path_f          string
+	FileType_f      string
+	Path_old        string
+	Path_new        string
+	FileType_old    string
+	FileType_new    string
+	Path_backup_old string
+	Path_backup_new string
+	Snapshot        string
 }
 
-func StartListening() (ret UsedMetrics, bunch []float64) {
-	var flagsPtrs [4]*bool
-	flagsPtrs[0] = flag.Bool("mean", true, "calculate a mean num")
-	flagsPtrs[1] = flag.Bool("median", true, "calculate a median num")
-	flagsPtrs[2] = flag.Bool("mode", true, "calculate a mode num")
-	flagsPtrs[3] = flag.Bool("sd", true, "calculate a SD num")
-	flag.CommandLine.Init("didn`t stop executing a app", flag.ContinueOnError)
+/*
+ * Only one mode of operation is supported(take a look to str №27)
+ */
+func ParseFile() (fileInfo CLIcfg) {
+	path := flag.String("f", "", "path to file")
+	old_path := flag.String("old", "", "path to previus file (task 'to compare') or new snapshot path(task 3)")
+	new_path := flag.String("new", "", "path to new file (task 'to compare') or old snapshot path(task 3)")
+	snapshot := flag.String("snap-name", "", "file name to make snapshot")
+	flag.CommandLine.Init("flag settings didn`t stop executing a app", flag.ContinueOnError)
 
 	flag.Parse()
-
-	for i, ptr := range flagsPtrs {
-		if ptr != nil {
-			switch i {
-			case 0:
-				ret.NeedMean = *ptr
-			case 1:
-				ret.NeedMedian = *ptr
-			case 2:
-				ret.NeedMode = *ptr
-			case 3:
-				ret.NeedSD = *ptr
-			}
-		}
+	fileInfo.Path_f = *path
+	fileInfo.FileType_f = filepath.Ext(*path)
+	if filepath.Ext(*new_path) == ".txt" && filepath.Ext(*old_path) == ".txt" {
+		fileInfo.Path_backup_old = *old_path
+		fileInfo.Path_backup_new = *new_path
+	} else {
+		fileInfo.Path_old = *old_path
+		fileInfo.Path_new = *new_path
+		fileInfo.Path_backup_old = ""
+		fileInfo.Path_backup_new = ""
+		fileInfo.FileType_new = filepath.Ext(*new_path)
+		fileInfo.FileType_old = filepath.Ext(*old_path)
 	}
-
-	fmt.Println("Insert please a bunch of nums:")
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for scanner.Scan() {
-		input := scanner.Text()
-		if input == "" {
-			break
-		}
-		num, err := strconv.ParseFloat(input, 64)
-		if err != nil || num > 100000 || num < -100000 {
-			continue
-		}
-		bunch = append(bunch, num)
-	}
+	fileInfo.Snapshot = *snapshot
 
 	return
 }
