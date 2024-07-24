@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Places</title>
+</head>
+<body>
+    <h1>Places</h1>
+    <ul>
+        {{range .Places}}
+        <li>
+            <strong>{{.Name}}</strong><br>
+            Address: {{.Address}}<br>
+            Phone: {{.Phone}}<br>
+            Location: {{.Location.Latitude}}, {{.Location.Longitude}}<br>
+        </li>
+        {{end}}
+    </ul>
+    <div>
+        {{if gt .Page 1}}
+        <a href="/?page={{.PrevPage}}">Previous</a>
+        {{end}}
+        {{if lt .Page .TotalPages}}
+        <a href="/?page={{.NextPage}}">Next</a>
+        {{end}}
+    </div>
+</body>
+</html>

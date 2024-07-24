@@ -1,7 +1,8 @@
 package main
 
-import "goday03/src/internal/db/connector"
+import "goday03/src/internal/app/app"
+
 
 func main() {
-	connector.Conn()
+	app.Exec()
 }
