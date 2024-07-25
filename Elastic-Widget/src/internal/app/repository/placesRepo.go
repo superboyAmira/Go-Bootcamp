@@ -13,6 +13,7 @@ import (
 type Store interface {
 	GetPlaces(limit int, offset int) ([]model.Place, int, error)
 	ScrollApiPlaces(limit int) ([]model.Place, error)
+	GetRecommendations() ([]model.Place, error)
 }
 
 type PlaceRepository struct {
@@ -24,18 +25,18 @@ func NewPlaceRepository() *PlaceRepository {
 }
 
 func GetDocumentCnt(client *elastic.Client, index string) (int, error) {
-    countService := client.Count(index)
-    count, err := countService.Do(context.Background())
-    if err != nil {
-        return 0, err
-    }
-    return int(count), nil
+	countService := client.Count(index)
+	count, err := countService.Do(context.Background())
+	if err != nil {
+		return 0, err
+	}
+	return int(count), nil
 }
 
 func (r *PlaceRepository) GetPlaces(limit int, offset int) ([]model.Place, int, error) {
 	var ret []model.Place
 
-	res, err := r.Client.Search("places").From(offset).Size(limit).MaxResponseSize(20000).Do(context.Background())
+	res, err := r.Client.Search("places").From(offset).Size(limit).MaxResponseSize(20000).Pretty(true).Do(context.Background())
 	if err != nil {
 		return nil, 0, err
 	}
@@ -84,4 +85,36 @@ func (r *PlaceRepository) ScrollApiPlaces(limit int) ([]model.Place, error) {
 	}
 
 	return allPlaces, nil
+}
+
+func (r *PlaceRepository) GetRecommendations(lat, lon float64) ([]model.Place, error) {
+	var places []model.Place
+
+	searchRes, err := r.Client.Search().
+		Index("places").
+		Query(elastic.NewGeoDistanceQuery("location").
+			Lat(lat).
+			Lon(lon).Distance("10km")).
+		SortBy(elastic.NewGeoDistanceSort("location").
+			Point(lat, lon).
+			Asc().
+			SortMode("min").
+			DistanceType("arc").
+			IgnoreUnmapped(true).
+			Unit("km")).
+		Size(3).
+		Pretty(true).
+		Do(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	for _, hit := range searchRes.Hits.Hits {
+		var tmp model.Place
+		err := json.Unmarshal(hit.Source, &tmp)
+		if err != nil {
+			return nil, err
+		}
+		places = append(places, tmp)
+	}
+	return places, nil
 }

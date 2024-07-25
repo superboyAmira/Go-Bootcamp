@@ -2,9 +2,10 @@ package app
 
 import (
 	"context"
-	"goday03/src/internal/app/api"
 	"goday03/src/internal/app/repository"
 	"goday03/src/internal/app/service"
+	"goday03/src/internal/app/service/api"
+	"goday03/src/internal/app/service/recommend"
 	"log"
 	"net/http"
 	"os"
@@ -41,8 +42,9 @@ func Exec() {
 	// ex02
 	api := api.NewApi(rep)
 	http.HandleFunc("/api/places", api.GetPlacesApiHandler)
-
-	
+	// ex03
+	rec := recommend.NewRecommendation(rep)
+	http.HandleFunc("/api/recommend", rec.GetRecommendations)
 
 	server := &http.Server{
 		Addr:    ":8888",
