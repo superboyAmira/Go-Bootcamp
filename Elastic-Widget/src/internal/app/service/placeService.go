@@ -4,7 +4,6 @@ import (
 	"goday03/src/internal/app/model"
 	"goday03/src/internal/app/repository"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -72,29 +71,32 @@ func (s *PlaceService) BigStorePageHandler(w http.ResponseWriter, req *http.Requ
 	}
 
 	limit := 10
-	batchSize := limit
 	offset := (page - 1) * limit
 
-	if offset > 13650 || offset < 0 {
-		http.Error(w, "Invalid page number!", http.StatusBadRequest)
-		log.Println(http.StatusBadRequest)
+	cnt, err := repository.GetDocumentCnt(s.reositoryPlaces.Client, "places")
+	if err != nil {
+		http.Error(w, "Cannot count all docs", http.StatusInternalServerError)
 		return
 	}
 
-	allPlaces, err := s.reositoryPlaces.ScrollApiPlaces(batchSize)
+	if offset > cnt || offset < 0 {
+		http.Error(w, "Invalid page number!", http.StatusBadRequest)
+		return
+	}
+
+	allPlaces, err := s.reositoryPlaces.ScrollApiPlaces(limit)
 	if err != nil {
 		http.Error(w, "Error fetching places: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	start := offset
-	end := offset + limit
-	if start > len(allPlaces) {
-		start = len(allPlaces)
+
+	var places []model.Place
+	if (limit + offset) > cnt {
+		places = allPlaces[offset:cnt]
+	} else {
+		places = allPlaces[offset:(limit + offset)]
 	}
-	if end > len(allPlaces) {
-		end = len(allPlaces)
-	}
-	places := allPlaces[start:end]
+
 	total := len(allPlaces)
 
 	tmplPath := filepath.Join("..", "..", "internal", "web", "html", "page.html")
@@ -105,17 +107,19 @@ func (s *PlaceService) BigStorePageHandler(w http.ResponseWriter, req *http.Requ
 	}
 
 	data := struct {
-		Places     []model.Place
-		Page       int
-		TotalPages int
-		PrevPage   int
-		NextPage   int
+		Places            []model.Place
+		Page              int
+		TotalPages        int
+		PrevPage          int
+		NextPage          int
+		AllPagesCntPlaces int
 	}{
-		Places:     places,
-		Page:       page,
-		TotalPages: (total + limit - 1) / limit,
-		PrevPage:   page - 1,
-		NextPage:   page + 1,
+		Places:            places,
+		Page:              page,
+		TotalPages:        (total + limit - 1) / limit,
+		PrevPage:          page - 1,
+		NextPage:          page + 1,
+		AllPagesCntPlaces: cnt,
 	}
 
 	err = tmpl.Execute(w, data)

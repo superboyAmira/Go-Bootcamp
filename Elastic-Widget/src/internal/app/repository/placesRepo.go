@@ -16,17 +16,26 @@ type Store interface {
 }
 
 type PlaceRepository struct {
-	client *elastic.Client
+	Client *elastic.Client
 }
 
 func NewPlaceRepository() *PlaceRepository {
-	return &PlaceRepository{client: client.GetClient()}
+	return &PlaceRepository{Client: client.GetClient()}
+}
+
+func GetDocumentCnt(client *elastic.Client, index string) (int, error) {
+    countService := client.Count(index)
+    count, err := countService.Do(context.Background())
+    if err != nil {
+        return 0, err
+    }
+    return int(count), nil
 }
 
 func (r *PlaceRepository) GetPlaces(limit int, offset int) ([]model.Place, int, error) {
 	var ret []model.Place
 
-	res, err := r.client.Search("places").From(offset).Size(limit).MaxResponseSize(20000).Do(context.Background())
+	res, err := r.Client.Search("places").From(offset).Size(limit).MaxResponseSize(20000).Do(context.Background())
 	if err != nil {
 		return nil, 0, err
 	}
@@ -50,7 +59,7 @@ func (r *PlaceRepository) GetPlaces(limit int, offset int) ([]model.Place, int, 
 func (r *PlaceRepository) ScrollApiPlaces(limit int) ([]model.Place, error) {
 	var allPlaces []model.Place
 
-	scroll := r.client.Scroll("places").
+	scroll := r.Client.Scroll("places").
 		Size(limit).
 		FetchSourceContext(elastic.NewFetchSourceContext(true)).
 		Pretty(true)

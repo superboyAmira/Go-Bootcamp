@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"goday03/src/internal/app/api"
 	"goday03/src/internal/app/repository"
 	"goday03/src/internal/app/service"
 	"log"
@@ -11,16 +12,7 @@ import (
 	"syscall"
 )
 
-func Exec() {
-	// loader.LoadData()
-	rep := repository.NewPlaceRepository()
-	serv := service.NewPlaceService(rep)
-	http.HandleFunc("/", serv.BigStorePageHandler)
-
-	server := &http.Server{
-		Addr:    ":8888",
-		Handler: nil,
-	}
+func serverHandler(server *http.Server) {
 	quitSIG := make(chan os.Signal, 1)
 	signal.Notify(quitSIG, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT, syscall.SIGTSTP)
 
@@ -39,3 +31,22 @@ func Exec() {
 	log.Println("Server shut down!")
 }
 
+func Exec() {
+	// ex00
+	// loader.LoadData()
+	// ex01
+	rep := repository.NewPlaceRepository()
+	serv := service.NewPlaceService(rep)
+	http.HandleFunc("/", serv.BigStorePageHandler)
+	// ex02
+	api := api.NewApi(rep)
+	http.HandleFunc("/api/places", api.GetPlacesApiHandler)
+
+	
+
+	server := &http.Server{
+		Addr:    ":8888",
+		Handler: nil,
+	}
+	serverHandler(server)
+}

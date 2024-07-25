@@ -1,32 +1,73 @@
 package api
 
 import (
+	"errors"
+	"goday03/src/internal/app/model"
+	"goday03/src/internal/app/repository"
 	"net/http"
 	"strconv"
+)
 
-	"github.com/olivere/elastic/v7"
+const (
+	limit int    = 10
+	index string = "places"
 )
 
 type Api struct {
-	client *elastic.Client
+	repository *repository.PlaceRepository
 }
 
-func NewApi(client *elastic.Client) (api *Api) {
-	return &Api{client: client}
+func NewApi(client *repository.PlaceRepository) (api *Api) {
+	return &Api{repository: client}
 }
 
 func (a *Api) GetPlacesApiHandler(w http.ResponseWriter, req *http.Request) {
+	std400resp := func(err error) {
+		resp := &ResponseHTTP400{
+			Err: err.Error(),
+		}
+		resp.SendResponse(w)
+	}
+
 	pageStr := req.URL.Query().Get("page")
 	if pageStr == "" {
 		pageStr = "1"
 	}
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		http.Error(w, "Cannot parse page number!", http.StatusBadRequest)
+		std400resp(err)
 		return
 	}
-	if page > 13650 || page < 0 {
-		http.Error(w, "Invalid page number!", http.StatusBadRequest)
+
+	offset := (page - 1) * limit
+
+	cnt, err := repository.GetDocumentCnt(a.repository.Client, index)
+	if err != nil {
+		std400resp(err)
+		return
 	}
-	
+
+	if offset > cnt || offset < 0 {
+		std400resp(errors.New("invalid page number"))
+		return
+	}
+
+	allPlaces, err := a.repository.ScrollApiPlaces(limit)
+	if err != nil {
+		std400resp(err)
+		return
+	}
+	var places []model.Place
+	if (limit + offset) > cnt {
+		places = allPlaces[offset:cnt]
+	} else {
+		places = allPlaces[offset:(limit + offset)]
+	}
+
+	resp := &ResponseHTTP200{
+		Name: index,
+		Total: cnt,
+		Places: places,
+	}
+	resp.SendResponse(w)
 }
