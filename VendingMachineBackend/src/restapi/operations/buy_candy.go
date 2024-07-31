@@ -16,6 +16,24 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+type CandyPrice struct {
+	PriceList map[string]int64
+}
+
+func InitCandyPrice() CandyPrice {
+	return CandyPrice{
+		PriceList: map[string]int64{
+			"CE": 10,
+			"AA": 15,
+			"NT": 17,
+			"DE": 21,
+			"YE": 23,
+		},
+	}
+}
+
+
+
 // BuyCandyHandlerFunc turns a function with the right signature into a buy candy handler
 type BuyCandyHandlerFunc func(BuyCandyParams) middleware.Responder
 
@@ -32,6 +50,37 @@ type BuyCandyHandler interface {
 // NewBuyCandy creates a new http.Handler for the buy candy operation
 func NewBuyCandy(ctx *middleware.Context, handler BuyCandyHandler) *BuyCandy {
 	return &BuyCandy{Context: ctx, Handler: handler}
+}
+
+func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
+    priceList := InitCandyPrice()
+    order := params.Order
+    // Validate candy type
+    price, exists := priceList.PriceList[*order.CandyType]
+    if !exists {
+        return NewBuyCandyBadRequest().WithPayload(&BuyCandyBadRequestBody{
+            Error: "Invalid candy type",
+        })
+    }
+
+    // Calculate total cost
+    totalCost := price * *order.CandyCount
+
+    // Validate if enough money is provided
+    if *order.Money < totalCost {
+        return NewBuyCandyPaymentRequired().WithPayload(&BuyCandyPaymentRequiredBody{
+            Error: "Not enough money",
+        })
+    }
+
+    // Calculate change
+    change := *order.Money - totalCost
+
+    // Return response
+    return NewBuyCandyCreated().WithPayload(&BuyCandyCreatedBody{
+        Thanks: "Thank you!",
+        Change: change,
+    })
 }
 
 /*

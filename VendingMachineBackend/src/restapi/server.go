@@ -503,5 +503,5 @@ func handleInterrupt(once *sync.Once, s *Server) {
 }
 
 func signalNotify(interrupt chan<- os.Signal) {
-	signal.Notify(interrupt, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT, syscall.SIGTSTP)
 }

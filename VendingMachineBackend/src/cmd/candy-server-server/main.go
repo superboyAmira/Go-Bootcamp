@@ -24,6 +24,7 @@ func main() {
 	}
 
 	api := operations.NewCandyServerAPI(swaggerSpec)
+	api.BuyCandyHandler = operations.BuyCandyHandlerFunc(operations.BuyCandyHandlerImpl)	
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
@@ -49,6 +50,7 @@ func main() {
 	}
 
 	server.ConfigureAPI()
+	server.Port = 8888
 
 	if err := server.Serve(); err != nil {
 		log.Fatalln(err)
