@@ -8,6 +8,7 @@ package operations
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
@@ -27,12 +28,10 @@ func InitCandyPrice() CandyPrice {
 			"AA": 15,
 			"NT": 17,
 			"DE": 21,
-			"YE": 23,
+			"YR": 23,
 		},
 	}
 }
-
-
 
 // BuyCandyHandlerFunc turns a function with the right signature into a buy candy handler
 type BuyCandyHandlerFunc func(BuyCandyParams) middleware.Responder
@@ -62,14 +61,20 @@ func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
             Error: "Invalid candy type",
         })
     }
+	if *order.CandyCount < 1 {
+		return NewBuyCandyBadRequest().WithPayload(&BuyCandyBadRequestBody{
+			Error: "Invalid cndy count",
+		})
+	}
 
     // Calculate total cost
     totalCost := price * *order.CandyCount
 
     // Validate if enough money is provided
     if *order.Money < totalCost {
+		errStr := "You need " + string(totalCost - *order.Money) + " more money!"
         return NewBuyCandyPaymentRequired().WithPayload(&BuyCandyPaymentRequiredBody{
-            Error: "Not enough money",
+            Error: errStr,
         })
     }
 
@@ -240,10 +245,10 @@ func (o *BuyCandyBody) UnmarshalBinary(b []byte) error {
 type BuyCandyCreatedBody struct {
 
 	// change
-	Change int64 `json:"change,omitempty"`
+	Change int64 `json:"change"`
 
 	// thanks
-	Thanks string `json:"thanks,omitempty"`
+	Thanks string `json:"thanks"`
 }
 
 // Validate validates this buy candy created body
