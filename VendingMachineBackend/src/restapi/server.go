@@ -38,6 +38,7 @@ var defaultSchemes []string
 func init() {
 	defaultSchemes = []string{
 		schemeHTTP,
+		schemeHTTPS,
 	}
 }
 
@@ -174,6 +175,7 @@ func (s *Server) Serve() (err error) {
 	servers := []*http.Server{}
 
 	if s.hasScheme(schemeUnix) {
+		log.Println("UNIX scheme enabled")
 		domainSocket := new(http.Server)
 		domainSocket.MaxHeaderBytes = int(s.MaxHeaderSize)
 		domainSocket.Handler = s.handler
@@ -196,6 +198,7 @@ func (s *Server) Serve() (err error) {
 	}
 
 	if s.hasScheme(schemeHTTP) {
+		log.Println("HTTP scheme enabled")
 		httpServer := new(http.Server)
 		httpServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpServer.ReadTimeout = s.ReadTimeout
@@ -226,6 +229,7 @@ func (s *Server) Serve() (err error) {
 	}
 
 	if s.hasScheme(schemeHTTPS) {
+		log.Println("HTTPS scheme enabled")
 		httpsServer := new(http.Server)
 		httpsServer.MaxHeaderBytes = int(s.MaxHeaderSize)
 		httpsServer.ReadTimeout = s.TLSReadTimeout
@@ -282,7 +286,9 @@ func (s *Server) Serve() (err error) {
 			if !ok {
 				return fmt.Errorf("cannot parse CA certificate")
 			}
+			// пул сертификатов, которые мы распарсили. каждый элемент пула будет проверяться и запрашиваться у клиента.
 			httpsServer.TLSConfig.ClientCAs = caCertPool
+			// настройка для обязательной проверки и запроса сертификата у клиента
 			httpsServer.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		}
 

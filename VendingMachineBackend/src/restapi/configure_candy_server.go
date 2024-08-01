@@ -14,7 +14,6 @@ import (
 	"candy-server/restapi/operations"
 )
 
-//go:generate swagger generate server --target ../../src --name CandyServer --spec ../openApi.yaml --principal interface{}
 
 func configureFlags(api *operations.CandyServerAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }

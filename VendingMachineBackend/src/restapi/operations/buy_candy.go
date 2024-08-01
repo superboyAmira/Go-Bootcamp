@@ -8,7 +8,7 @@ package operations
 import (
 	"context"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime/middleware"
@@ -61,6 +61,7 @@ func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
             Error: "Invalid candy type",
         })
     }
+	
 	if *order.CandyCount < 1 {
 		return NewBuyCandyBadRequest().WithPayload(&BuyCandyBadRequestBody{
 			Error: "Invalid cndy count",
@@ -72,7 +73,7 @@ func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
 
     // Validate if enough money is provided
     if *order.Money < totalCost {
-		errStr := "You need " + string(totalCost - *order.Money) + " more money!"
+		errStr := "You need " + strconv.Itoa(int(totalCost - *order.Money)) + " more money!"
         return NewBuyCandyPaymentRequired().WithPayload(&BuyCandyPaymentRequiredBody{
             Error: errStr,
         })
