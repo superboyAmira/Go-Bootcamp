@@ -17,6 +17,16 @@ import (
 	"github.com/go-openapi/validate"
 )
 
+
+/*
+	#cgo CFLAGS: -I../cfiles
+	#cgo LDFLAGS: -L../cfiles -lcow -Wl,-rpath=../../restapi/cfiles
+	#include "cowsay.h"
+	#include <stdlib.h>
+*/
+import "C"
+import "unsafe"
+
 type CandyPrice struct {
 	PriceList map[string]int64
 }
@@ -54,7 +64,7 @@ func NewBuyCandy(ctx *middleware.Context, handler BuyCandyHandler) *BuyCandy {
 func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
     priceList := InitCandyPrice()
     order := params.Order
-    // Validate candy type
+
     price, exists := priceList.PriceList[*order.CandyType]
     if !exists {
         return NewBuyCandyBadRequest().WithPayload(&BuyCandyBadRequestBody{
@@ -68,10 +78,8 @@ func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
 		})
 	}
 
-    // Calculate total cost
     totalCost := price * *order.CandyCount
 
-    // Validate if enough money is provided
     if *order.Money < totalCost {
 		errStr := "You need " + strconv.Itoa(int(totalCost - *order.Money)) + " more money!"
         return NewBuyCandyPaymentRequired().WithPayload(&BuyCandyPaymentRequiredBody{
@@ -79,14 +87,22 @@ func BuyCandyHandlerImpl(params BuyCandyParams) middleware.Responder {
         })
     }
 
-    // Calculate change
     change := *order.Money - totalCost
 
-    // Return response
     return NewBuyCandyCreated().WithPayload(&BuyCandyCreatedBody{
-        Thanks: "Thank you!",
+        Thanks: askCow("Thank you!"),
         Change: change,
     })
+}
+
+func askCow(text string) string {
+	cPhrase := C.CString(text)
+    defer C.free(unsafe.Pointer(cPhrase))
+    
+    cResult := C.ask_cow(cPhrase)
+    defer C.free(unsafe.Pointer(cResult))
+    
+    return C.GoString(cResult)
 }
 
 /*

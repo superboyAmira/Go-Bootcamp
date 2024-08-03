@@ -88,15 +88,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-    log.Println(string(respBody))
     var ResponseData Response
     if err = json.Unmarshal(respBody, &ResponseData); err != nil {
         log.Fatal(err)
     }
 
+    // ex01
+    fmt.Println("ex01(Text format)")
     if ResponseData.Err == "" {
         fmt.Println(ResponseData.Thanks + " Your change is " + strconv.Itoa(int(ResponseData.Change)))
     } else {
         fmt.Println(ResponseData.Err)
     }
+    // ex02
+    fmt.Println("ex02(JSON format)")
+    fmt.Println(string(respBody))
 }
