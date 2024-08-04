@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package transmitter;
+
+option go_package = "team00/pkg/transmitter_v1";
+
+import "google/protobuf/timestamp.proto";
+
+message NewConnectionResponse {
+    string session_id = 1;
+    double frequency = 2;
+    google.protobuf.Timestamp time_utc = 3;
+}
+
+message VoidRequest { }
+
+service NewConnectionService {
+    rpc RandomDataGen (VoidRequest) returns (stream NewConnectionResponse);
+}
