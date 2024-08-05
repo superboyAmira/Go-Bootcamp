@@ -1,5 +1,5 @@
-TRANSMITTER_VER=v1
-PROTOC_TRANSMITTER_DIR=./pkg/transmitter_$(TRANSMITTER_VER)
+TRANSMITTER_VER=transmitter_v1
+PROTOC_TRANSMITTER_DIR=./pkg/$(TRANSMITTER_VER)
 
 
 protobuf_install : 
@@ -13,7 +13,9 @@ protoc_gen :
 	mkdir $(PROTOC_TRANSMITTER_DIR)
 	protoc \
 	--go_opt=paths=import \
-	--go_out=./pkg/transmitter_v1 \
+	--go_out=./pkg/$(TRANSMITTER_VER) \
 	--go-grpc_opt=paths=import \
-	--go-grpc_out=./pkg/transmitter_v1 \
+	--go-grpc_out=./pkg/$(TRANSMITTER_VER) \
 	./api/transmitter/transmitter-contract.proto
+	mv $(PROTOC_TRANSMITTER_DIR)/team00/pkg/$(TRANSMITTER_VER)/* ./pkg/$(TRANSMITTER_VER)
+	rm -rf $(PROTOC_TRANSMITTER_DIR)/team00
