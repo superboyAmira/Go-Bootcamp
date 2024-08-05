@@ -9,7 +9,8 @@ type Config struct {
 	Port string `xml:"port"`
 }
 
-func LoadCfg(path string) (cfg *Config, err error) {
+func LoadCfg(path string) (*Config, error) {
+	cfg := &Config{}
 	xmlData, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -19,5 +20,5 @@ func LoadCfg(path string) (cfg *Config, err error) {
 		return nil, err
 	}
 
-	return
+	return cfg, nil
 } 
