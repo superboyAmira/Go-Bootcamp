@@ -25,7 +25,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	client := transmitter_v1.NewNewConnectionServiceClient(conn)
+	client := transmitter_v1.NewConnectionServiceClient(conn)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()

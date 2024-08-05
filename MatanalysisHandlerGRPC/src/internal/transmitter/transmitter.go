@@ -12,11 +12,11 @@ import (
 )
 
 type ConnServer struct {
-	transmitter_v1.UnimplementedNewConnectionServiceServer
+	transmitter_v1.UnimplementedConnectionServiceServer
 }
 
 // реализовываем нашу ручку
-func (ser *ConnServer) RandomDataGen(req *transmitter_v1.VoidRequest, stream grpc.ServerStreamingServer[transmitter_v1.NewConnectionResponse]) error {
+func (ser *ConnServer) RandomDataGen(req *transmitter_v1.VoidRequest, stream grpc.ServerStreamingServer[transmitter_v1.ConnectionResponse]) error {
 	ev, std := randValues()
 	normDist := distuv.Normal{
 		Mu: ev,
@@ -31,7 +31,7 @@ func (ser *ConnServer) RandomDataGen(req *transmitter_v1.VoidRequest, stream grp
 	// и 3мя разными числами из распределения
 
 	// используется массив указателей по причине использования протобафом (поле state protoimpl.MessageState) мютексов (sync.Mutex)
-	resp := []*transmitter_v1.NewConnectionResponse{
+	resp := []*transmitter_v1.ConnectionResponse{
 		{
 			SessionId: UUIDcon,
 			Frequency: normDist.Rand(),

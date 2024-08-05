@@ -19,31 +19,31 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	NewConnectionService_RandomDataGen_FullMethodName = "/transmitter.NewConnectionService/RandomDataGen"
+	ConnectionService_RandomDataGen_FullMethodName = "/transmitter.ConnectionService/RandomDataGen"
 )
 
-// NewConnectionServiceClient is the client API for NewConnectionService service.
+// ConnectionServiceClient is the client API for ConnectionService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type NewConnectionServiceClient interface {
-	RandomDataGen(ctx context.Context, in *VoidRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[NewConnectionResponse], error)
+type ConnectionServiceClient interface {
+	RandomDataGen(ctx context.Context, in *VoidRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ConnectionResponse], error)
 }
 
-type newConnectionServiceClient struct {
+type connectionServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewNewConnectionServiceClient(cc grpc.ClientConnInterface) NewConnectionServiceClient {
-	return &newConnectionServiceClient{cc}
+func NewConnectionServiceClient(cc grpc.ClientConnInterface) ConnectionServiceClient {
+	return &connectionServiceClient{cc}
 }
 
-func (c *newConnectionServiceClient) RandomDataGen(ctx context.Context, in *VoidRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[NewConnectionResponse], error) {
+func (c *connectionServiceClient) RandomDataGen(ctx context.Context, in *VoidRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[ConnectionResponse], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &NewConnectionService_ServiceDesc.Streams[0], NewConnectionService_RandomDataGen_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &ConnectionService_ServiceDesc.Streams[0], ConnectionService_RandomDataGen_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[VoidRequest, NewConnectionResponse]{ClientStream: stream}
+	x := &grpc.GenericClientStream[VoidRequest, ConnectionResponse]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -54,69 +54,69 @@ func (c *newConnectionServiceClient) RandomDataGen(ctx context.Context, in *Void
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type NewConnectionService_RandomDataGenClient = grpc.ServerStreamingClient[NewConnectionResponse]
+type ConnectionService_RandomDataGenClient = grpc.ServerStreamingClient[ConnectionResponse]
 
-// NewConnectionServiceServer is the server API for NewConnectionService service.
-// All implementations must embed UnimplementedNewConnectionServiceServer
+// ConnectionServiceServer is the server API for ConnectionService service.
+// All implementations must embed UnimplementedConnectionServiceServer
 // for forward compatibility.
-type NewConnectionServiceServer interface {
-	RandomDataGen(*VoidRequest, grpc.ServerStreamingServer[NewConnectionResponse]) error
-	mustEmbedUnimplementedNewConnectionServiceServer()
+type ConnectionServiceServer interface {
+	RandomDataGen(*VoidRequest, grpc.ServerStreamingServer[ConnectionResponse]) error
+	mustEmbedUnimplementedConnectionServiceServer()
 }
 
-// UnimplementedNewConnectionServiceServer must be embedded to have
+// UnimplementedConnectionServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedNewConnectionServiceServer struct{}
+type UnimplementedConnectionServiceServer struct{}
 
-func (UnimplementedNewConnectionServiceServer) RandomDataGen(*VoidRequest, grpc.ServerStreamingServer[NewConnectionResponse]) error {
+func (UnimplementedConnectionServiceServer) RandomDataGen(*VoidRequest, grpc.ServerStreamingServer[ConnectionResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method RandomDataGen not implemented")
 }
-func (UnimplementedNewConnectionServiceServer) mustEmbedUnimplementedNewConnectionServiceServer() {}
-func (UnimplementedNewConnectionServiceServer) testEmbeddedByValue()                              {}
+func (UnimplementedConnectionServiceServer) mustEmbedUnimplementedConnectionServiceServer() {}
+func (UnimplementedConnectionServiceServer) testEmbeddedByValue()                           {}
 
-// UnsafeNewConnectionServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to NewConnectionServiceServer will
+// UnsafeConnectionServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ConnectionServiceServer will
 // result in compilation errors.
-type UnsafeNewConnectionServiceServer interface {
-	mustEmbedUnimplementedNewConnectionServiceServer()
+type UnsafeConnectionServiceServer interface {
+	mustEmbedUnimplementedConnectionServiceServer()
 }
 
-func RegisterNewConnectionServiceServer(s grpc.ServiceRegistrar, srv NewConnectionServiceServer) {
-	// If the following call pancis, it indicates UnimplementedNewConnectionServiceServer was
+func RegisterConnectionServiceServer(s grpc.ServiceRegistrar, srv ConnectionServiceServer) {
+	// If the following call pancis, it indicates UnimplementedConnectionServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&NewConnectionService_ServiceDesc, srv)
+	s.RegisterService(&ConnectionService_ServiceDesc, srv)
 }
 
-func _NewConnectionService_RandomDataGen_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ConnectionService_RandomDataGen_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(VoidRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(NewConnectionServiceServer).RandomDataGen(m, &grpc.GenericServerStream[VoidRequest, NewConnectionResponse]{ServerStream: stream})
+	return srv.(ConnectionServiceServer).RandomDataGen(m, &grpc.GenericServerStream[VoidRequest, ConnectionResponse]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
-type NewConnectionService_RandomDataGenServer = grpc.ServerStreamingServer[NewConnectionResponse]
+type ConnectionService_RandomDataGenServer = grpc.ServerStreamingServer[ConnectionResponse]
 
-// NewConnectionService_ServiceDesc is the grpc.ServiceDesc for NewConnectionService service.
+// ConnectionService_ServiceDesc is the grpc.ServiceDesc for ConnectionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var NewConnectionService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "transmitter.NewConnectionService",
-	HandlerType: (*NewConnectionServiceServer)(nil),
+var ConnectionService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "transmitter.ConnectionService",
+	HandlerType: (*ConnectionServiceServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "RandomDataGen",
-			Handler:       _NewConnectionService_RandomDataGen_Handler,
+			Handler:       _ConnectionService_RandomDataGen_Handler,
 			ServerStreams: true,
 		},
 	},
