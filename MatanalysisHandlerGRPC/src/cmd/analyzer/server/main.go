@@ -34,7 +34,7 @@ func main() {
 	}
 
 	server := grpc.NewServer()
-	transmitter_v1.RegisterNewConnectionServiceServer(server, &transmitter.ConnServer{})
+	transmitter_v1.RegisterConnectionServiceServer(server, &transmitter.ConnServer{})
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT, syscall.SIGTSTP)
