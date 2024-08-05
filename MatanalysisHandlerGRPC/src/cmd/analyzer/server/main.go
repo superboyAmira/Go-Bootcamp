@@ -40,14 +40,14 @@ func main() {
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT, syscall.SIGTSTP)
 
 	log.Printf("Server is running on port %s", config.Port)
-	go func ()  {
+	go func() {
 		if err := server.Serve(listen); err != nil {
 			log.Fatalf("Failed to serve: %v", err)
 		}
 	}()
 	<-quit
 	log.Println("Shutting down server...")
-	_, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	_, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	server.GracefulStop()
 	log.Println("Server stopped gracefully")
