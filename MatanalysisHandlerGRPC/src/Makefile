@@ -13,7 +13,7 @@ protobuf_install :
 
 protoc_gen : proto_clear
 	mkdir $(PROTOC_TRANSMITTER_DIR)
-	mkdir $(PROTOC_RECEIVER_DIR)
+	# mkdir $(PROTOC_RECEIVER_DIR)
 
 
 	protoc \
@@ -25,14 +25,14 @@ protoc_gen : proto_clear
 	mv $(PROTOC_TRANSMITTER_DIR)/team00/pkg/$(TRANSMITTER_VER)/* ./pkg/$(TRANSMITTER_VER)
 	rm -rf $(PROTOC_TRANSMITTER_DIR)/team00
 
-	protoc \
-	--go_opt=paths=import \
-	--go_out=./pkg/$(RECEIVER_VER) \
-	--go-grpc_opt=paths=import \
-	--go-grpc_out=./pkg/$(RECEIVER_VER) \
-	./api/receiver/receiver-contract.proto
-	mv $(PROTOC_RECEIVER_DIR)/team00/pkg/$(RECEIVER_VER)/* ./pkg/$(RECEIVER_VER)
-	rm -rf $(PROTOC_RECEIVER_DIR)/team00
+	# protoc \
+	# --go_opt=paths=import \
+	# --go_out=./pkg/$(RECEIVER_VER) \
+	# --go-grpc_opt=paths=import \
+	# --go-grpc_out=./pkg/$(RECEIVER_VER) \
+	# ./api/receiver/receiver-contract.proto
+	# mv $(PROTOC_RECEIVER_DIR)/team00/pkg/$(RECEIVER_VER)/* ./pkg/$(RECEIVER_VER)
+	# rm -rf $(PROTOC_RECEIVER_DIR)/team00
 
 proto_clear :
 	rm -rf ./pkg/*

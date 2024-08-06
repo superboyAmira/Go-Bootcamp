@@ -1,9 +1,11 @@
 package transmitter
 
 import (
+	"context"
 	"log"
 	"math/rand"
 	"team00/pkg/transmitter_v1"
+	"time"
 
 	"github.com/google/uuid"
 	"gonum.org/v1/gonum/stat/distuv"
@@ -24,38 +26,31 @@ func (ser *ConnServer) RandomDataGen(req *transmitter_v1.VoidRequest, stream grp
 		Src: nil,
 	}
 	UUIDcon := uuid.New().String()
-	log.Printf("{UUID: %s} New Conn generation [EV: %f], [STD: %f]", UUIDcon, ev, std)
 	
-	// не очень понял понятие: 'поток записей с случайным нормальным распределением',
-	// пока сделал, чтобы отправлялся стрим из 3 сообщений с одним UUID 
-	// и 3мя разными числами из распределения
+	stopStream, cancel := context.WithTimeout(context.Background(), time.Second * 11) 
+	defer cancel()
 
-	// используется массив указателей по причине использования протобафом (поле state protoimpl.MessageState) мютексов (sync.Mutex)
-	resp := []*transmitter_v1.ConnectionResponse{
-		{
-			SessionId: UUIDcon,
-			Frequency: normDist.Rand(),
-			TimeUtc: timestamppb.Now(),
-		},
-		{
-			SessionId: UUIDcon,
-			Frequency: normDist.Rand(),
-			TimeUtc: timestamppb.Now(),
-		},
-		{
-			SessionId: UUIDcon,
-			Frequency: normDist.Rand(),
-			TimeUtc: timestamppb.Now(),
-		},
-	}
+	log.Printf("{UUID: %s} {NEW CONNECTION} [EV: %f], [STD: %f]", UUIDcon, ev, std)
 
-	for _, data := range resp {
-		if err := stream.Send(data); err != nil {
-			return err
+	for {
+		select {
+		case <-stopStream.Done() :
+			log.Println("Stream finished (context Duration)")
+			return nil
+
+		case <-stream.Context().Done() :
+			log.Println("Stream finished")
+			return nil
+		default : 
+			if err := stream.Send(&transmitter_v1.ConnectionResponse{
+				SessionId: UUIDcon,
+				Frequency: normDist.Rand(),
+				TimeUtc: timestamppb.Now(),
+			}); err != nil {
+				return err
+			}
 		}
 	}
-
-	return nil
 }
 
 func randValues() (ev float64, std float64) {
