@@ -1,0 +1,10 @@
+services:
+  db:
+    restart: always
+    image: postgres:15.2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: anomalyDB
+    ports:
+      - 9900:5432

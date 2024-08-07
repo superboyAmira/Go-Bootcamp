@@ -1,7 +1,8 @@
 package anomaly
 
 import (
-	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -11,12 +12,11 @@ type Loader interface {
 }
 
 type AnomalyModel struct {
-	gorm.Model
-	SessionId string `gorm:"primaryKey"`
+	SessionId string
 	Frequency float64
 	Mean      float64
 	STD       float64
-	Time      *timestamppb.Timestamp
+	Time      time.Time
 }
 
 func (AnomalyModel) TableName() string {
@@ -28,7 +28,7 @@ func NewAnomalyModel(
 	frequency,
 	mean,
 	std float64,
-	time *timestamppb.Timestamp) *AnomalyModel {
+	time time.Time) *AnomalyModel {
 	return &AnomalyModel{
 		SessionId: session,
 		Frequency: frequency,

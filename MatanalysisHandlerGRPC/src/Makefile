@@ -3,6 +3,7 @@ RECEIVER_VER=receiver_v1
 PROTOC_TRANSMITTER_DIR=./pkg/$(TRANSMITTER_VER)
 PROTOC_RECEIVER_DIR=./pkg/$(RECEIVER_VER)
 
+DC_NAME=docker-compose.yml
 
 protobuf_install : 
 	sudo apt-get install -y protobuf-compiler
@@ -36,3 +37,10 @@ protoc_gen : proto_clear
 
 proto_clear :
 	rm -rf ./pkg/*
+
+container_up :
+	docker-compose -f $(DC_NAME) up
+
+container_rm:
+	docker-compose stop \
+	&& docker-compose rm

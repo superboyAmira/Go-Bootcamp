@@ -1,3 +1,10 @@
 <Config>
     <port>:8888</port>
+
+    <host>localhost</host>
+    <portdb>9900</portdb>
+    <dbname>anomalyDB</dbname>
+    <user>postgres</user>
+    <pass>postgres</pass>
+    <ssl>disable</ssl>
 </Config>

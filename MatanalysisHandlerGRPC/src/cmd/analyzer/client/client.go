@@ -9,6 +9,8 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+	"team00/db/model/anomaly"
+	"team00/db/postgresql"
 	"team00/internal/cfg"
 	"team00/internal/clientServices/detector"
 	"team00/internal/clientServices/receiver"
@@ -52,6 +54,12 @@ func main() {
 	defer conn.Close()
 	client := transmitter_v1.NewConnectionServiceClient(conn)
 
+	// db connect
+	db, err := postgresql.Connect()
+	if err != nil {
+		log.Fatalf("Bad db connection: %v", err)
+	}
+
 	// get stream
 	stream, err := client.RandomDataGen(ctx, &transmitter_v1.VoidRequest{})
 	if err != nil {
@@ -62,11 +70,11 @@ func main() {
 	signal.Notify(diagnostic, syscall.SIGINT)
 	statistic := receiver.NewReceivedData()
 
-	anomaly := false
+	anomalyBool := false
 	go func() {
 		<-diagnostic
 		log.Println("Start anomaly detection...")
-		anomaly = true
+		anomalyBool = true
 	}()
 	pool := sync.Pool{
 		New: func() any {
@@ -100,8 +108,11 @@ func main() {
 				log.Fatalf("Error on receiving: %v", err)
 			}
 
-			if anomaly {
-				detector.AnomalyDetect(&response.Frequency, &k, statistic)
+			if anomalyBool {
+				if detector.AnomalyDetect(&response.Frequency, &k, statistic) {
+					object := anomaly.NewAnomalyModel(response.SessionId, response.Frequency, statistic.Mean, statistic.STD, response.TimeUtc.AsTime())
+					postgresql.TxSaveExecutor(db, object.LoadDb)
+				}
 			} else {
 				log.Printf("{RESPONSE}: %v", response)
 				statistic.Append(&response.Frequency)
