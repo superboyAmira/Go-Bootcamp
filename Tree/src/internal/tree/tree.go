@@ -1,27 +1,8 @@
 package tree
 
-type Stack[T any] struct {
-	arr []T
-}
+import "day05/internal/support"
 
-func New[T any]() *Stack[T] {
-	return &Stack[T]{}
-}
 
-func (s *Stack[T]) Push(element T) {
-	s.arr = append(s.arr, element)
-}
-
-func (s *Stack[T]) Pop() (T) {
-	if len(s.arr) == 0 {
-		var zero T
-		return zero
-	}
-	topIndex := len(s.arr) - 1
-	element := s.arr[topIndex]
-	s.arr = s.arr[:topIndex]
-	return element
-}
 
 type TreeNode struct {
 	HasToy bool
@@ -64,14 +45,14 @@ func unrollGarland(root *TreeNode) []bool {
 		return []bool{root.HasToy}
 	}
 
-	currentLevel := New[*TreeNode]()
-	nextLevel := New[*TreeNode]()
+	currentLevel := support.New[*TreeNode]()
+	nextLevel := support.New[*TreeNode]()
 
 	currentLevel.Push(root)
 
 	leftStart := false
 
-	for len(currentLevel.arr) > 0 {
+	for len(currentLevel.Arr) > 0 {
 		tmp := currentLevel.Pop()
 		if tmp != nil {
 
@@ -93,7 +74,7 @@ func unrollGarland(root *TreeNode) []bool {
 				}
 			}
 		}
-		if len(currentLevel.arr) == 0 {
+		if len(currentLevel.Arr) == 0 {
 			leftStart = !leftStart
 			currentLevel, nextLevel = nextLevel, currentLevel
 		}
