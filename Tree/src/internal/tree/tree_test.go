@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"log"
 	"testing"
 )
 
@@ -72,5 +73,188 @@ func TestAreToysBalanced(t *testing.T) {
 
 	if root.areToysBalanced() {
 		t.Error("areToysBalanced() should return false when left and right subtrees are not balanced")
+	}
+}
+
+func TestUnrollGarland(t *testing.T) {
+	root := &TreeNode{
+		HasToy: true,
+		Left: &TreeNode{
+			HasToy: true,
+			Left: &TreeNode{
+				HasToy: true,
+				Left: nil,
+				Right: nil,
+			},
+			Right: &TreeNode{
+				HasToy: false,
+				Left: nil,
+				Right: nil,
+			},
+		},
+		Right: &TreeNode{
+			HasToy: false,
+			Left: &TreeNode{
+				HasToy: true,
+				Left: nil,
+				Right: nil,
+			},
+			Right: &TreeNode{
+				HasToy: true,
+				Left: nil,
+				Right: nil,
+			},
+		},
+	}
+
+	res := unrollGarland(root)
+	log.Print(res)
+	origin := []bool{ true, true, false, true, true, false, true }
+	if len(res) != len(origin) {
+		t.Errorf("Failed test: result = %v, origin = %v", res, origin)
+	}
+	for i, elem := range res {
+		if elem != origin[i] {
+			t.Errorf("Failed test: result = %v, origin = %v", res, origin)
+			return
+		}
+	}
+
+
+	root = &TreeNode{
+		HasToy: true,
+		Left: &TreeNode{
+			HasToy: false,
+			Left: &TreeNode{
+				HasToy: true,
+				Left: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+				Right: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+			},
+			Right: &TreeNode{
+				HasToy: false,
+				Left: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+				Right: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+			},
+		},
+		Right: &TreeNode{
+			HasToy: true,
+			Left: &TreeNode{
+				HasToy: true,
+				Left: &TreeNode{
+					HasToy: false,
+					Left: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+				Right: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+			},
+			Right: &TreeNode{
+				HasToy: false,
+				Left: &TreeNode{
+					HasToy: false,
+					Left: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+				Right: &TreeNode{
+					HasToy: true,
+					Left: &TreeNode{
+						HasToy: false,
+						Left:  nil,
+						Right: nil,
+					},
+					Right: &TreeNode{
+						HasToy: true,
+						Left:  nil,
+						Right: nil,
+					},
+				},
+			},
+		},
+	}
+	res = unrollGarland(root)
+	log.Println(res)
+	origin = []bool{true, false, true, false, true, false, true, true, true, true, true, false, true, false, true, true, false, true, true, true, false, true, false, true, true, false, true, false, true, false, true}
+	if len(res) != len(origin) {
+		t.Errorf("Failed test: result = %v, origin = %v", res, origin)
+	}
+	for i, elem := range res {
+		if elem != origin[i] {
+			t.Errorf("Failed test: result = %v, origin = %v", res, origin)
+		}
 	}
 }

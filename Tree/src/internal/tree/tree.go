@@ -1,5 +1,28 @@
 package tree
 
+type Stack[T any] struct {
+	arr []T
+}
+
+func New[T any]() *Stack[T] {
+	return &Stack[T]{}
+}
+
+func (s *Stack[T]) Push(element T) {
+	s.arr = append(s.arr, element)
+}
+
+func (s *Stack[T]) Pop() (T) {
+	if len(s.arr) == 0 {
+		var zero T
+		return zero
+	}
+	topIndex := len(s.arr) - 1
+	element := s.arr[topIndex]
+	s.arr = s.arr[:topIndex]
+	return element
+}
+
 type TreeNode struct {
 	HasToy bool
 	Left *TreeNode
@@ -17,6 +40,7 @@ func NewTree(initNode bool) *TreeNode {
 }
 
 func (r *TreeNode) areToysBalanced() bool {
+	
 	if r.isEmpty() {
 		return true
 	}
@@ -32,23 +56,50 @@ func (r *TreeNode) areToysBalanced() bool {
 }
 
 func unrollGarland(root *TreeNode) []bool {
+	var result []bool
+	if root == nil {
+		return result
+	}
 	if root.isEmpty() {
 		return []bool{root.HasToy}
 	}
-	level := 1
-	var res []bool
-	tmpNode := root
-	for {
-		res = append(res, tmpNode.HasToy)
-		if level % 2 == 0 {
-			tmpNode = tmpNode.Right
-		} else {
-			tmpNode = tmpNode.Left
+
+	currentLevel := New[*TreeNode]()
+	nextLevel := New[*TreeNode]()
+
+	currentLevel.Push(root)
+
+	leftStart := false
+
+	for len(currentLevel.arr) > 0 {
+		tmp := currentLevel.Pop()
+		if tmp != nil {
+
+			result = append(result, tmp.HasToy)
+
+			if leftStart {
+				if tmp.Left != nil {
+					nextLevel.Push(tmp.Left)
+				}
+				if tmp.Right != nil {
+					nextLevel.Push(tmp.Right)
+				}
+			} else {
+				if tmp.Right != nil {
+					nextLevel.Push(tmp.Right)
+				}
+				if tmp.Left != nil {
+					nextLevel.Push(tmp.Left)
+				}
+			}
 		}
-		level++
+		if len(currentLevel.arr) == 0 {
+			leftStart = !leftStart
+			currentLevel, nextLevel = nextLevel, currentLevel
+		}
 	}
-	return res
-} 
+	return result
+}
 
 func getValueSubTree(node *TreeNode, currentValue *int64) {
 	if node.HasToy {
