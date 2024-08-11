@@ -41,7 +41,7 @@ func Create() {
 	}
 
 	// Сохраняем изображение в файл
-	file, err := os.Create("amazing_logo.png")
+	file, err := os.Create("../../web/static/amazing_logo.png")
 	if err != nil {
 		panic(err)
 	}
