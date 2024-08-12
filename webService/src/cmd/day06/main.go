@@ -1,10 +1,17 @@
 package main
 
 import (
+	"day06/internal/api/handlers"
+	"day06/internal/api/middlewares"
+	"day06/internal/repositories"
+	"day06/internal/services"
 	postgresql "day06/internal/storage/postgre"
 	"day06/pkg/logo"
 	"log/slog"
+	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -22,6 +29,22 @@ func Exec() {
 		return
 	}
 
+	postRepo := repositories.NewPostRepository(db)
+	postService := services.NewPostService(postRepo)
+	postHandler := handlers.NewPostHandler(postService)
+	setupHandlers(postHandler)
+}
+
+func setupHandlers(postHandler *handlers.PostHandler) {
+	router := mux.NewRouter()	
+
+	router.HandleFunc("/", handlers.MainIndexHandler).Methods("GET")
+	router.Handle("/admin", middlewares.
+		AuthMiddleware(http.HandlerFunc(handlers.AdminPanelHandler))).
+		Methods("GET")
+	router.Handle("/admin/post/{id}", ).Methods("POST")
+	router.Handle("/admin/post/{id}").Methods("PUT")
+	router.Handle("/admin/post/{id}").Methods("DELETE")
 }
 
 func initLogger(env string) *slog.Logger {
