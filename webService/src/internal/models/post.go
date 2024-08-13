@@ -1,7 +1,7 @@
 package models
 
 type Post struct {
-	Id              string `gorm:"primarykey"`
-	ShortDecription string `gorm:"type:varchar(1000)"`
-	Decription      string `gorm:"type:varchar(10000)"`
+	Id               string `gorm:"type:uuid;primaryKey"`
+	ShortDescription string `gorm:"type:varchar(1000)"`
+	Description      string `gorm:"type:varchar(10000)"`
 }

@@ -6,7 +6,6 @@ import (
 	"day06/internal/api/handlers"
 	"day06/internal/api/middlewares"
 	"day06/internal/repositories"
-	"day06/internal/services"
 	postgresql "day06/internal/storage/postgre"
 	"day06/pkg/logo"
 	"log/slog"
@@ -38,32 +37,40 @@ func main() {
 		return
 	}
 	db, err := postgresql.Connect(cfg.DSN.ToString())
+	///
+	// db.AutoMigrate(models.Post{})
+	///
 	if err != nil {
-		log.Error("failed connection to db: %v", err)
+		log.Error("failed connection to db", "error", err.Error())
 		return
 	}
 
 	postRepo := repositories.NewPostRepository(db)
-	postService := services.NewPostService(postRepo)
-	postHandler := handlers.NewPostHandler(postService)
-	server := http.Server {
-		Addr: ":8888",
-		Handler: setupHandlers(postHandler),
-	}
-	serverHandler(&server, log)
-}
 
-func setupHandlers(postHandler *handlers.PostHandler) *mux.Router {
-	router := mux.NewRouter()	
+	///
+	// postRepo.Init10Posts()
+	///
 
-	router.HandleFunc("/", handlers.MainIndexHandler).Methods("GET")
+	postHandler := handlers.NewPostHandler(postRepo)
+	indexHandler := handlers.NewIndexHandler(postRepo)
+
+	router := mux.NewRouter()
+
+	router.Handle("/page/{pageNum}", http.HandlerFunc(indexHandler.MainIndexHandler)).Methods("GET")
 	router.Handle("/admin", middlewares.
 		AuthMiddleware(http.HandlerFunc(handlers.AdminPanelHandler))).
 		Methods("GET")
+
+	router.Handle("/post/{id}", http.HandlerFunc(postHandler.PostGet)).Methods("GET")
 	// router.Handle("/admin/post/{id}", ).Methods("POST")
 	// router.Handle("/admin/post/{id}").Methods("PUT")
 	// router.Handle("/admin/post/{id}").Methods("DELETE")
-	return router
+
+	server := http.Server{
+		Addr:    ":8888",
+		Handler: router,
+	}
+	serverHandler(&server, log)
 }
 
 func serverHandler(server *http.Server, log *slog.Logger) {

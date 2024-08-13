@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Posts</title>
+</head>
+<body>
+    <h1>Posts</h1>
+    <a href="/admin">Admin Panel</a>
+    <ul>
+        {{range .Posts}}
+        <li>
+            <strong>ID:</strong> {{.Id}} <br>
+            <strong>Short Description:</strong> {{.ShortDescription}} <br>
+            <a href="/post/{{.Id}}">Read More</a>
+        </li>
+        {{end}}
+    </ul>
+    <div>
+        {{if .Prev}}
+        <a href="/page/{{.PrevPage}}">Prev</a>
+        {{end}}
+
+        {{if .Next}}
+        <a href="/page/{{.NextPage}}">Next</a>
+        {{end}}
+    </div>
+</body>
+</html>
