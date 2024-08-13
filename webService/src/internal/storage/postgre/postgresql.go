@@ -1,20 +1,12 @@
 package postgresql
 
 import (
-	"encoding/xml"
-	"fmt"
-	"os"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func Connect() (*gorm.DB, error) {
-	var dsnXML dsn
-	if err := dsnXML.Configure(); err != nil {
-		return nil, err
-	}
-	db, err := gorm.Open(postgres.Open(dsnXML.toString()), &gorm.Config{})
+func Connect(dsn string) (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -58,38 +50,4 @@ func TxSaveExecutor(db *gorm.DB, fn func(*gorm.DB) error) error {
 	}
 	tx.Commit()
 	return nil
-}
-
-type dsn struct {
-	Host   string `xml:"host"`
-	Port   string `xml:"portdb"`
-	Dbname string `xml:"dbname"`
-
-	User string `xml:"user"`
-	Pass string `xml:"pass"`
-
-	Ssl string `xml:"ssl"`
-}
-
-func (r *dsn) Configure() error {
-	xmlData, err := os.ReadFile("../server/cfg.xml")
-	if err != nil {
-		return err
-	}
-
-	err = xml.Unmarshal(xmlData, &r)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *dsn) toString() string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		r.Host,
-		r.Port,
-		r.User,
-		r.Pass,
-		r.Dbname,
-		r.Ssl)
 }
