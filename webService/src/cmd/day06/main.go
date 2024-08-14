@@ -23,23 +23,17 @@ const (
 	envProd  = "prod"
 )
 
-const (
-	port = ":8888"
-	host = "12"
-)
 
 func main() {
 	logo.Create()
-	log := initLogger(envLocal)
+	log := initLogger(envProd)
 	cfg := configs.GetConfig(log)
 	if cfg == nil {
 		log.Error("failed read cfg")
 		return
 	}
 	db, err := postgresql.Connect(cfg.DSN.ToString())
-	///
-	// db.AutoMigrate(models.Post{})
-	///
+
 	if err != nil {
 		log.Error("failed connection to db", "error", err.Error())
 		return
@@ -47,25 +41,28 @@ func main() {
 
 	postRepo := repositories.NewPostRepository(db)
 
-	///
-	// postRepo.Init10Posts()
-	///
-
 	postHandler := handlers.NewPostHandler(postRepo)
 	indexHandler := handlers.NewIndexHandler(postRepo)
 
 	router := mux.NewRouter()
+
+	middlewareCombo := func (fn func(w http.ResponseWriter, req *http.Request)) http.Handler {
+		return middlewares.RaceLimiter(middlewares.AuthMiddleware(http.HandlerFunc(fn)))
+	}
+
 	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../../web/static/"))))
 
-	router.Handle("/page/{pageNum}", http.HandlerFunc(indexHandler.MainIndexHandler)).Methods("GET")
-	router.Handle("/post/{id}", http.HandlerFunc(postHandler.PostGet)).Methods("GET")
+	router.Handle("/page/{pageNum}", middlewares.RaceLimiter(http.HandlerFunc(indexHandler.MainIndexHandler))).Methods("GET")
+	router.Handle("/post/{id}", middlewares.RaceLimiter(http.HandlerFunc(postHandler.PostGet))).Methods("GET")
 
-	router.Handle("/admin", middlewares.
-		AuthMiddleware(http.HandlerFunc(handlers.AdminPanelHandler))).
+	router.Handle("/admin", middlewareCombo(handlers.AdminPanelHandler)).
 		Methods("GET")
-	router.Handle("/admin/create-post", http.HandlerFunc(postHandler.PostCreate)).Methods("POST")
-	router.Handle("/admin/delete-post", http.HandlerFunc(postHandler.PostDelete)).Methods("POST")
-	router.Handle("/admin/update-post", http.HandlerFunc(postHandler.PostUpdate)).Methods("POST")
+	router.Handle("/admin/create-post", middlewareCombo(postHandler.PostCreate)).
+		Methods("POST")
+	router.Handle("/admin/delete-post", middlewareCombo(postHandler.PostDelete)).
+		Methods("POST")
+	router.Handle("/admin/update-post", middlewareCombo(postHandler.PostUpdate)).
+		Methods("POST")
 
 	server := http.Server{
 		Addr:    ":8888",

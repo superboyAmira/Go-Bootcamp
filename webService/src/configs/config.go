@@ -37,7 +37,9 @@ func GetConfig(log *slog.Logger) *Config {
 
 	file, err := os.Open("../../configs/admin_credentials.txt")
 	if err != nil {
-		log.Error("Error opening file", "error", err.Error())
+		if log != nil {
+			log.Error("Error opening file", "error", err.Error())
+		}
 		return nil
 	}
 	defer file.Close()
@@ -72,9 +74,13 @@ func GetConfig(log *slog.Logger) *Config {
 		}
 	}
 	if scanner.Err() != nil {
-		log.Error("Err reading file", "err", scanner.Err().Error())
+		if log != nil {
+			log.Error("Err reading file", "err", scanner.Err().Error())
+		}
 		return nil
 	}
-	log.Debug("Successfully parsed txt", "msg", r)
+	if log != nil {
+		log.Debug("Successfully parsed txt", "msg", r)
+	}
 	return r
 }
