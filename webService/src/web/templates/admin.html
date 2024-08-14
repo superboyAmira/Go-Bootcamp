@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        <form action="/admin/create-post" method="post">
+            <h2>Create New Post</h2>
+            <label for="shortDescription">Short Description:</label>
+            <input type="text" id="shortDescription" name="shortDescription" maxlength="1000" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="10" maxlength="10000" required></textarea>
+
+            <button type="submit">Create Post</button>
+        </form>
+        <form action="/admin/delete-post" method="post">
+            <h2>Delete Post</h2>
+            <label for="postId">Post ID:</label>
+            <input type="text" id="postId" name="postId" required>
+
+            <button type="submit" class="delete">Delete Post</button>
+        </form>
+        <form action="/admin/update-post" method="post">
+            <h2>Update Post</h2>
+            <label for="postId">Post ID:</label>
+            <input type="text" id="postId" name="postId" required>
+
+            <label for="shortDescription">Short Description:</label>
+            <input type="text" id="shortDescription" name="shortDescription" maxlength="1000" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="10" maxlength="10000" required></textarea>
+
+            <button type="submit" class="update">Update Post</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,19 +1,12 @@
 package handlers
 
 import (
+	"html/template"
 	"net/http"
-	"os"
-
-	"github.com/russross/blackfriday/v2"
 )
 
 func AdminPanelHandler(w http.ResponseWriter, req *http.Request) {
-	form, err := os.ReadFile("../../../web/templates/AdminPanel.md")
-	if err != nil {
-		http.Error(w, "Cannot open template AdminPanel", http.StatusInternalServerError)
-	}
-	html := blackfriday.Run(form)
-
+	tmpl := template.Must(template.ParseFiles("../../web/templates/admin.html"))
 	w.Header().Set("Content-Type", "text/html")
-	w.Write(html)
+	tmpl.Execute(w, tmpl)
 }

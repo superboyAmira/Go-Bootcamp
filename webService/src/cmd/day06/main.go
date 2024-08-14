@@ -55,16 +55,17 @@ func main() {
 	indexHandler := handlers.NewIndexHandler(postRepo)
 
 	router := mux.NewRouter()
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("../../web/static/"))))
 
 	router.Handle("/page/{pageNum}", http.HandlerFunc(indexHandler.MainIndexHandler)).Methods("GET")
+	router.Handle("/post/{id}", http.HandlerFunc(postHandler.PostGet)).Methods("GET")
+
 	router.Handle("/admin", middlewares.
 		AuthMiddleware(http.HandlerFunc(handlers.AdminPanelHandler))).
 		Methods("GET")
-
-	router.Handle("/post/{id}", http.HandlerFunc(postHandler.PostGet)).Methods("GET")
-	// router.Handle("/admin/post/{id}", ).Methods("POST")
-	// router.Handle("/admin/post/{id}").Methods("PUT")
-	// router.Handle("/admin/post/{id}").Methods("DELETE")
+	router.Handle("/admin/create-post", http.HandlerFunc(postHandler.PostCreate)).Methods("POST")
+	router.Handle("/admin/delete-post", http.HandlerFunc(postHandler.PostDelete)).Methods("POST")
+	router.Handle("/admin/update-post", http.HandlerFunc(postHandler.PostUpdate)).Methods("POST")
 
 	server := http.Server{
 		Addr:    ":8888",
