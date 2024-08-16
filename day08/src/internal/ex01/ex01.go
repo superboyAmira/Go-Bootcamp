@@ -1,6 +1,10 @@
 package ex01
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"reflect"
+)
 
 type UnknownPlant struct {
     FlowerType  string
@@ -14,28 +18,43 @@ type AnotherUnknownPlant struct {
     Height      int `unit:"inches"`
 }
 
-func DescripePlant(plant any) {
-    var plant1 UnknownPlant
-    var plant2 AnotherUnknownPlant
-    var ok1 = false
-    var ok2 = false
-
-    plant1, ok1 = plant.(UnknownPlant)
-    plant2, ok2 = plant.(AnotherUnknownPlant)
-    if !ok1 && !ok2 {
-        return
+func DescripePlant(plant any) (error) {
+    typ := reflect.TypeOf(plant)
+    if typ == nil  {
+        return errors.New("reflect failed to parse type")
     }
-
-    plant1.Color.Tag
-
-    switch ok1 {
-    case true:
-        fmt.Printf("FlowerType:%v", plant1.FlowerType)
-        fmt.Printf("LeafType:%v", plant1.LeafType)
-        fmt.Printf("Color:%v", plant1.Color)
-    case false:
-        fmt.Printf("FlowerColor:%v", plant2.FlowerColor)
-        fmt.Printf("LeafType:%v", plant2.LeafType)
-        fmt.Printf("Height:%v", plant2.Height)
+    if typ.Kind() != reflect.Struct {
+        return errors.ErrUnsupported
     }
+    value := reflect.ValueOf(plant)
+
+    switch typ.Name() {
+    case "UnknownPlant":
+        for i := 0; i < value.NumField(); i++ {
+            field := typ.Field(i)
+            value := value.Field(i).Interface()
+            tag := field.Tag.Get("color_scheme")
+
+            if tag != "" {
+                fmt.Printf("%v(%v=%v):%v\n", field.Name, "color_scheme", tag, value)
+            } else {
+                fmt.Printf("%v:%v\n", field.Name, value)
+            }
+        }
+    case "AnotherUnknownPlant":
+        for i := 0; i < value.NumField(); i++ {
+            field := typ.Field(i)
+            value := value.Field(i).Interface()
+            tag := field.Tag.Get("unit")
+
+            if tag != "" {
+                fmt.Printf("%v(%v=%v):%v\n", field.Name, "unit", tag, value)
+            } else {
+                fmt.Printf("%v:%v\n", field.Name, value)
+            }
+        }
+    default:
+        return errors.ErrUnsupported
+    }
+    return nil
 }
