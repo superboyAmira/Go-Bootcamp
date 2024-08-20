@@ -1,51 +1,55 @@
 package sleepsort
 
 import (
+	"context"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
-
-// func sleepsort(slice []int) chan []int {
-// 	result := make(chan []int)
-// 	go func() {
-// 		buffer := make(chan int, len(slice))
-// 		sorted := []int{}
-
-// 		routine := func(c chan int, num int, sleep time.Duration) {
-// 			time.Sleep(sleep)
-// 			c <- num
-// 		}
-
-// 		for i := 0; i < len(slice); i++ {
-// 			go routine(buffer, slice[i], (time.Second * time.Duration(slice[i])))
-// 		}
-// 		for i := 0; i < len(slice); i++ {
-// 			number := <-buffer
-// 			sorted = append(sorted, number)
-// 		}
-// 		result <- sorted
-// 	}()
-// 	<-result
-// 	return result
-// }
 
 func sleepsort(slice []int) chan []int {
 	buffer := make(chan int, len(slice))
 	result := make(chan []int)
 
-	go func() {
-		sorted := []int{}
+	
 
-		for i := 0; i < len(slice); i++ {
-			number := <-buffer
-			sorted = append(sorted, number)
+	// graseful stop all goroutine
+	ctx, stop := context.WithCancel(context.Background()) 
+
+	go func ()  {
+		graceful := make(chan os.Signal, 1)
+		signal.Notify(graceful, os.Interrupt, syscall.SIGTERM)
+		<-graceful
+		stop()
+	}()
+	///
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			close(result)
+			return
+		default:
+			sorted := []int{}
+
+			for i := 0; i < len(slice); i++ {
+				number := <-buffer
+				sorted = append(sorted, number)
+			}
+			result <- sorted
+			close(result)
 		}
-		result <- sorted
-		close(result)
 	}()
 
 	routine := func(c chan int, num int, sleep time.Duration) {
-		time.Sleep(sleep)
-		c <- num
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			time.Sleep(sleep)
+			c <- num
+		}
 	}
 
 	for i := 0; i < len(slice); i++ {
