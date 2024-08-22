@@ -28,19 +28,17 @@ func CrawlerWeb(ctx context.Context, urls chan string) (body chan []*string) {
 
 		for i, url := range urlsString {
 			wg.Add(1)
-			i, url := i, url // Создаем локальные копии переменных
-
 			sem <- struct{}{} // Блокируем, если горутин слишком много
 
-			go func() {
+			go func(i_t int, url_t string) {
 				defer wg.Done()
 				defer func() { <-sem }() // Освобождаем семафор по завершению горутины
 
 				res := new(string)
-				resp, err := http.Get(url)
+				resp, err := http.Get(url_t)
 				if err != nil {
 					*res = err.Error()
-					result[i] = res
+					result[i_t] = res
 					return
 				}
 				defer resp.Body.Close()
@@ -51,8 +49,8 @@ func CrawlerWeb(ctx context.Context, urls chan string) (body chan []*string) {
 				} else {
 					*res = string(upackedBody)
 				}
-				result[i] = res
-			}()
+				result[i_t] = res
+			}(i, url)
 		}
 
 		wg.Wait()
